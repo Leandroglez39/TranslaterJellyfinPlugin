@@ -1,0 +1,22 @@
+## Build outputs
+bin/
+obj/
+out/
+
+## VS / Rider
+.vs/
+.idea/
+*.user
+
+## NuGet
+*.nupkg
+packages/
+
+## Secrets
+.env
+
+## OS
+.DS_Store
+Thumbs.db
+
+.env

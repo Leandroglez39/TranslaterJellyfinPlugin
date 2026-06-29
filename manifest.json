@@ -1,0 +1,20 @@
+[
+  {
+    "guid": "b6f8a3d2-4c1e-4f9a-9e2b-7a1c5d3e8f01",
+    "name": "Subtitle Translator",
+    "description": "Adds translated subtitle tracks by passing existing subtitles through a translation engine (LibreTranslate, DeepL or Google Translate).",
+    "overview": "Translate existing subtitle tracks into another language.",
+    "owner": "leoal",
+    "category": "Subtitles",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "Initial scaffold.",
+        "targetAbi": "10.9.0.0",
+        "sourceUrl": "",
+        "checksum": "",
+        "timestamp": "2026-06-29T00:00:00Z"
+      }
+    ]
+  }
+]

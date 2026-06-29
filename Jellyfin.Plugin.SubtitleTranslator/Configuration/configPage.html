@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Subtitle Translator</title>
+</head>
+<body>
+<div id="SubtitleTranslatorConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
+     data-require="emby-input,emby-button,emby-select">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="SubtitleTranslatorConfigForm">
+                <div class="inputContainer">
+                    <input is="emby-input" id="ApiUrl" name="ApiUrl" type="text" label="OpenAI API URL" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="ApiKey" name="ApiKey" type="password" label="OpenAI API key (or OPENAI_API_KEY env)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="Model" name="Model" type="text" label="Model" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="SourceLanguage" name="SourceLanguage" type="text" label="Source language (auto)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="TargetLanguage" name="TargetLanguage" type="text" label="Target language (es)" />
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="BatchSize" name="BatchSize" type="number" label="Cues per request" />
+                </div>
+                <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                    <span>Save</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var pluginId = "b6f8a3d2-4c1e-4f9a-9e2b-7a1c5d3e8f01";
+        document.querySelector('#SubtitleTranslatorConfigPage').addEventListener('pageshow', function () {
+            Dashboard.showLoadingMsg();
+            ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                document.querySelector('#ApiUrl').value = config.ApiUrl || '';
+                document.querySelector('#ApiKey').value = config.ApiKey || '';
+                document.querySelector('#Model').value = config.Model || '';
+                document.querySelector('#SourceLanguage').value = config.SourceLanguage || '';
+                document.querySelector('#TargetLanguage').value = config.TargetLanguage || '';
+                document.querySelector('#BatchSize').value = config.BatchSize || 40;
+                Dashboard.hideLoadingMsg();
+            });
+        });
+        document.querySelector('#SubtitleTranslatorConfigForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            Dashboard.showLoadingMsg();
+            ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                config.ApiUrl = document.querySelector('#ApiUrl').value;
+                config.ApiKey = document.querySelector('#ApiKey').value;
+                config.Model = document.querySelector('#Model').value;
+                config.SourceLanguage = document.querySelector('#SourceLanguage').value;
+                config.TargetLanguage = document.querySelector('#TargetLanguage').value;
+                config.BatchSize = parseInt(document.querySelector('#BatchSize').value, 10) || 40;
+                ApiClient.updatePluginConfiguration(pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+            });
+            return false;
+        });
+    </script>
+</div>
+</body>
+</html>
