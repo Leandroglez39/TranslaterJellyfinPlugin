@@ -85,7 +85,7 @@ public class OpenAiTranslationService : ITranslationService
         };
 
         using var client = _httpClientFactory.CreateClient();
-        client.Timeout = TimeSpan.FromMinutes(2);
+        client.Timeout = TimeSpan.FromMinutes(8);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, $"{Config.ApiUrl.TrimEnd('/')}/responses");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);

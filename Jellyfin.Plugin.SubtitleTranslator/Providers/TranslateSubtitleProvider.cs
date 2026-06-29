@@ -59,26 +59,25 @@ public class TranslateSubtitleProvider : ISubtitleProvider
     {
         var target = Plugin.Instance!.Configuration.TargetLanguage;
         var results = new List<RemoteSubtitleInfo>();
+        var lang = string.IsNullOrWhiteSpace(request.Language) ? "spa" : request.Language;
 
-        if (request.ContentType == VideoContentType.Movie || request.ContentType == VideoContentType.Episode)
+        var item = _libraryManager.FindByPath(request.MediaPath, false);
+        if (item is Video video)
         {
-            var item = _libraryManager.FindByPath(request.MediaPath, false);
-            if (item is Video video)
+            foreach (var stream in video.GetMediaStreams().Where(s => s.Type == MediaStreamType.Subtitle && s.IsTextSubtitleStream))
             {
-                foreach (var stream in video.GetMediaStreams().Where(s => s.Type == MediaStreamType.Subtitle && s.IsTextSubtitleStream))
+                results.Add(new RemoteSubtitleInfo
                 {
-                    results.Add(new RemoteSubtitleInfo
-                    {
-                        Id = string.Format(CultureInfo.InvariantCulture, "{0}:{1}", item.Id, stream.Index),
-                        ProviderName = Name,
-                        Name = $"Translated to {target} (from track #{stream.Index})",
-                        Format = "srt",
-                        ThreeLetterISOLanguageName = target,
-                    });
-                }
+                    Id = string.Format(CultureInfo.InvariantCulture, "{0}:{1}", item.Id, stream.Index),
+                    ProviderName = Name,
+                    Name = $"Translate to {target} (from track #{stream.Index} {stream.Language})",
+                    Format = "srt",
+                    ThreeLetterISOLanguageName = lang,
+                });
             }
         }
 
+        _logger.LogInformation("Subtitle Translator search '{Path}' lang={Lang}: {Count} candidates", request.MediaPath, lang, results.Count);
         return Task.FromResult<IEnumerable<RemoteSubtitleInfo>>(results);
     }
 
