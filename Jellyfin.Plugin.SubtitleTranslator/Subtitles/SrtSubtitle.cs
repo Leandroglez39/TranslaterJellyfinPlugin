@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using SubtitlesParser.Classes.Parsers;
 
 namespace Jellyfin.Plugin.SubtitleTranslator.Subtitles;
 
@@ -29,11 +32,42 @@ public static class SrtSubtitle
     private static readonly Regex IndexRegex = new(@"^\d+$", RegexOptions.Compiled);
 
     /// <summary>
-    /// Parses SRT content into cues.
+    /// Parses subtitle content (SRT/VTT/ASS) into cues via SubtitlesParser, with a
+    /// raw-SRT fallback. Indexes and timestamps stay in these internal structures.
     /// </summary>
-    /// <param name="content">Raw SRT text.</param>
+    /// <param name="content">Raw subtitle text.</param>
     /// <returns>Ordered list of cues.</returns>
     public static List<SrtCue> Parse(string content)
+    {
+        try
+        {
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            var items = new SubParser().ParseStream(stream, Encoding.UTF8);
+            if (items.Count > 0)
+            {
+                return items.Select((item, i) => new SrtCue
+                {
+                    Index = i + 1,
+                    Timing = $"{FormatTime(item.StartTime)} --> {FormatTime(item.EndTime)}",
+                    Text = string.Join("\n", item.PlaintextLines),
+                }).ToList();
+            }
+        }
+        catch (ArgumentException)
+        {
+            // Unknown/unsupported format: fall back to the raw SRT parser.
+        }
+
+        return ParseRaw(content);
+    }
+
+    private static string FormatTime(int milliseconds)
+    {
+        var ts = System.TimeSpan.FromMilliseconds(milliseconds);
+        return string.Format(CultureInfo.InvariantCulture, "{0:00}:{1:00}:{2:00},{3:000}", (int)ts.TotalHours, ts.Minutes, ts.Seconds, ts.Milliseconds);
+    }
+
+    private static List<SrtCue> ParseRaw(string content)
     {
         var cues = new List<SrtCue>();
         var blocks = content.Replace("\r\n", "\n").Split(new[] { "\n\n" }, System.StringSplitOptions.RemoveEmptyEntries);

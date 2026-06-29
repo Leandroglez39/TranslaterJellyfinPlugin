@@ -19,6 +19,7 @@
     <PackageReference Include="Jellyfin.Model" Version="10.11.*">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="SubtitlesParser" Version="1.5.1" />
   </ItemGroup>
 
   <ItemGroup>

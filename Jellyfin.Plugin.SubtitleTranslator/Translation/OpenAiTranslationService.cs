@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -58,30 +57,33 @@ public class OpenAiTranslationService : ITranslationService
             throw new InvalidOperationException("OpenAI API key is not configured.");
         }
 
-        // Number each segment so the model maps inputs to outputs reliably.
-        var input = new StringBuilder();
-        input.Append("Translate the numbered lines below and return a JSON array of strings (one per line):\n");
-        for (var i = 0; i < segments.Count; i++)
-        {
-            input.Append('[').Append(i.ToString(CultureInfo.InvariantCulture)).Append("] ")
-                 .Append(segments[i].Replace('\n', ' ')).Append('\n');
-        }
+        // Send only the raw text segments as a compact JSON array. Indexes/timestamps
+        // stay in our internal structures, so we never spend tokens on numbering.
+        var input = JsonSerializer.Serialize(segments);
 
         var sourceText = string.Equals(sourceLanguage, "auto", StringComparison.OrdinalIgnoreCase)
             ? "the source language"
             : sourceLanguage;
 
         var instructions =
-            $"You are a professional subtitle translator. Translate each numbered line from {sourceText} " +
-            $"to {targetLanguage}. Keep the exact same numbering, count and order. Do not merge or split lines. " +
-            "Preserve meaning, tone and on-screen brevity. Return ONLY a JSON array of strings, one per input line.";
+            $"You are a professional subtitle translator. The user message is a JSON array of subtitle lines in {sourceText}. " +
+            $"Translate every element to {targetLanguage}, preserving order, count, meaning, tone and on-screen brevity. " +
+            "Do not merge or split lines. Respond with the same number of strings in the 'translations' array.";
+
+        var schema = new
+        {
+            type = "object",
+            properties = new { translations = new { type = "array", items = new { type = "string" } } },
+            required = new[] { "translations" },
+            additionalProperties = false,
+        };
 
         var payload = new
         {
             model = Config.Model,
             instructions,
-            input = input.ToString(),
-            text = new { format = new { type = "json_object" } },
+            input,
+            text = new { format = new { type = "json_schema", name = "subtitle_translations", strict = true, schema } },
         };
 
         using var client = _httpClientFactory.CreateClient();

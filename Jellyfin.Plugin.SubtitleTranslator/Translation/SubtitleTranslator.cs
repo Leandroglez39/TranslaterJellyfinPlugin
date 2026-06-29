@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.SubtitleTranslator.Subtitles;
@@ -39,23 +40,33 @@ public class SrtTranslator
         }
 
         var size = batchSize <= 0 ? 40 : batchSize;
+        var batches = new List<List<SrtCue>>();
         for (var start = 0; start < cues.Count; start += size)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var slice = cues.GetRange(start, System.Math.Min(size, cues.Count - start));
-            var texts = new List<string>(slice.Count);
-            foreach (var cue in slice)
-            {
-                texts.Add(cue.Text);
-            }
-
-            var translated = await _translation.TranslateAsync(texts, sourceLanguage, targetLanguage, cancellationToken).ConfigureAwait(false);
-            for (var i = 0; i < slice.Count; i++)
-            {
-                slice[i].Text = translated[i];
-            }
+            batches.Add(cues.GetRange(start, System.Math.Min(size, cues.Count - start)));
         }
 
+        // Run batches in parallel with bounded concurrency to keep latency low.
+        using var gate = new SemaphoreSlim(4);
+        var tasks = batches.Select(async slice =>
+        {
+            await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var texts = slice.Select(c => c.Text).ToList();
+                var translated = await _translation.TranslateAsync(texts, sourceLanguage, targetLanguage, cancellationToken).ConfigureAwait(false);
+                for (var i = 0; i < slice.Count; i++)
+                {
+                    slice[i].Text = translated[i];
+                }
+            }
+            finally
+            {
+                gate.Release();
+            }
+        });
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
         return SrtSubtitle.Serialize(cues);
     }
 }
