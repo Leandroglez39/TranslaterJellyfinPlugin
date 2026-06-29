@@ -1,6 +1,8 @@
+using Jellyfin.Plugin.SubtitleTranslator.Providers;
 using Jellyfin.Plugin.SubtitleTranslator.Translation;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
+using MediaBrowser.Controller.Subtitles;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Jellyfin.Plugin.SubtitleTranslator;
@@ -15,5 +17,6 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
     {
         serviceCollection.AddSingleton<ITranslationService, OpenAiTranslationService>();
         serviceCollection.AddSingleton<SrtTranslator>();
+        serviceCollection.AddSingleton<ISubtitleProvider, TranslateSubtitleProvider>();
     }
 }
