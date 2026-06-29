@@ -31,6 +31,18 @@
                     <span>Save</span>
                 </button>
             </form>
+
+            <h2 style="margin-top:2em;">Translate embedded subtitle</h2>
+            <div class="inputContainer">
+                <input is="emby-input" id="ItemSearch" type="text" label="Search title" />
+            </div>
+            <button is="emby-button" type="button" id="BtnSearch" class="raised block emby-button"><span>Search</span></button>
+            <div class="selectContainer">
+                <label class="selectLabel" for="ItemSelect">Item / track</label>
+                <select is="emby-select" id="ItemSelect" class="emby-select"></select>
+            </div>
+            <button is="emby-button" type="button" id="BtnTranslate" class="raised button-submit block emby-button"><span>Translate now</span></button>
+            <p id="TranslateStatus"></p>
         </div>
     </div>
     <script type="text/javascript">
@@ -60,6 +72,34 @@
                 ApiClient.updatePluginConfiguration(pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
             });
             return false;
+        });
+        document.querySelector('#BtnSearch').addEventListener('click', function () {
+            Dashboard.showLoadingMsg();
+            var q = encodeURIComponent(document.querySelector('#ItemSearch').value || '');
+            ApiClient.ajax({ type: 'GET', url: ApiClient.getUrl('SubtitleTranslator/Candidates?search=' + q), dataType: 'json' }).then(function (items) {
+                var sel = document.querySelector('#ItemSelect');
+                sel.innerHTML = '';
+                items.forEach(function (it) {
+                    it.Streams.forEach(function (s) {
+                        var o = document.createElement('option');
+                        o.value = it.Id + '|' + s.Index;
+                        o.textContent = it.Name + '  ' + s.Label;
+                        sel.appendChild(o);
+                    });
+                });
+                Dashboard.hideLoadingMsg();
+            });
+        });
+        document.querySelector('#BtnTranslate').addEventListener('click', function () {
+            var v = document.querySelector('#ItemSelect').value;
+            if (!v) { return; }
+            var parts = v.split('|');
+            Dashboard.showLoadingMsg();
+            document.querySelector('#TranslateStatus').textContent = 'Translating...';
+            ApiClient.ajax({ type: 'POST', url: ApiClient.getUrl('SubtitleTranslator/Translate'), contentType: 'application/json',
+                data: JSON.stringify({ ItemId: parts[0], StreamIndex: parseInt(parts[1], 10), TargetLanguage: document.querySelector('#TargetLanguage').value }) })
+                .then(function (r) { document.querySelector('#TranslateStatus').textContent = 'Saved: ' + r.saved; Dashboard.hideLoadingMsg(); })
+                .catch(function () { document.querySelector('#TranslateStatus').textContent = 'Translation failed. Check logs.'; Dashboard.hideLoadingMsg(); });
         });
     </script>
 </div>

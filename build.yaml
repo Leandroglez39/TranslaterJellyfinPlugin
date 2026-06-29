@@ -2,12 +2,12 @@
 name: Subtitle Translator
 guid: b6f8a3d2-4c1e-4f9a-9e2b-7a1c5d3e8f01
 version: 1.0.0.0
-targetAbi: 10.9.0.0
-framework: net8.0
+targetAbi: 10.11.8.0
+framework: net9.0
 overview: Translate existing subtitle tracks into another language.
 description: >
-  Adds translated subtitle tracks by passing existing subtitles through a
-  translation engine (LibreTranslate, DeepL or Google Translate).
+  Extracts an embedded text subtitle track and translates it with OpenAI
+  (latest nano model) into a new sidecar track.
 category: Subtitles
 owner: leoal
 artifacts:
