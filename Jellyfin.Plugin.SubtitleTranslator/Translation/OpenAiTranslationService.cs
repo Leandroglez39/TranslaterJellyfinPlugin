@@ -155,7 +155,7 @@ public class OpenAiTranslationService : ITranslationService
                 {
                     foreach (var v in element.EnumerateArray())
                     {
-                        result.Add(v.GetString() ?? string.Empty);
+                        result.Add(ElementToString(v));
                     }
                 }
             }
@@ -176,5 +176,26 @@ public class OpenAiTranslationService : ITranslationService
         }
 
         return result.GetRange(0, expected);
+    }
+
+    private static string ElementToString(JsonElement v)
+    {
+        if (v.ValueKind == JsonValueKind.String)
+        {
+            return v.GetString() ?? string.Empty;
+        }
+
+        if (v.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var prop in v.EnumerateObject())
+            {
+                if (prop.Value.ValueKind == JsonValueKind.String)
+                {
+                    return prop.Value.GetString() ?? string.Empty;
+                }
+            }
+        }
+
+        return v.ToString();
     }
 }
