@@ -35,17 +35,17 @@ public class TranslateSubtitleProvider : ISubtitleProvider
     /// <param name="logger">Logger.</param>
     /// <param name="libraryManager">Library manager.</param>
     /// <param name="subtitleEncoder">Subtitle encoder used to extract embedded tracks.</param>
-    /// <param name="translator">SRT translator.</param>
+    /// <param name="translation">Translation service.</param>
     public TranslateSubtitleProvider(
         ILogger<TranslateSubtitleProvider> logger,
         ILibraryManager libraryManager,
         ISubtitleEncoder subtitleEncoder,
-        SrtTranslator translator)
+        ITranslationService translation)
     {
         _logger = logger;
         _libraryManager = libraryManager;
         _subtitleEncoder = subtitleEncoder;
-        _translator = translator;
+        _translator = new SrtTranslator(translation);
     }
 
     /// <inheritdoc />
