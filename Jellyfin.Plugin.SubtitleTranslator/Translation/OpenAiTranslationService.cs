@@ -60,6 +60,7 @@ public class OpenAiTranslationService : ITranslationService
 
         // Number each segment so the model maps inputs to outputs reliably.
         var input = new StringBuilder();
+        input.Append("Translate the numbered lines below and return a JSON array of strings (one per line):\n");
         for (var i = 0; i < segments.Count; i++)
         {
             input.Append('[').Append(i.ToString(CultureInfo.InvariantCulture)).Append("] ")
