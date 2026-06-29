@@ -1,0 +1,16 @@
+{
+  "category": "Subtitles",
+  "changelog": "Initial release. Translates embedded subtitle tracks with OpenAI.",
+  "description": "Extracts an embedded text subtitle track and translates it with OpenAI (latest nano model) into a new selectable track. (Requires configuration)",
+  "guid": "b6f8a3d2-4c1e-4f9a-9e2b-7a1c5d3e8f01",
+  "name": "Subtitle Translator",
+  "overview": "Translate embedded subtitles with OpenAI",
+  "owner": "leoal",
+  "targetAbi": "10.11.8.0",
+  "timestamp": "2026-06-29T00:00:00.0000000Z",
+  "version": "1.0.0.0",
+  "status": "Active",
+  "autoUpdate": false,
+  "imagePath": "thumb.png",
+  "assemblies": []
+}

@@ -21,4 +21,9 @@
     <EmbeddedResource Include="Configuration\configPage.html" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\deploy\meta.json" Link="meta.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\deploy\thumb.png" Link="thumb.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
